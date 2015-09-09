@@ -71,8 +71,22 @@ public class CountLines_infile {
 
 	@Test
 	public void testCommentsFile() {
-		fileName = "tests/whitespace.txt";
+		fileName = "tests/justComments.txt";
 		expectedLines = 0;
+		runTest();
+	}
+
+	@Test
+	public void testValidLineWithoutComment() {
+		fileName = "tests/validLineWithoutComment.txt";
+		expectedLines = 1;
+		runTest();
+	}
+
+	@Test
+	public void testValidLineWithComment() {
+		fileName = "tests/validLineWithComment.txt";
+		expectedLines = 1;
 		runTest();
 	}
 

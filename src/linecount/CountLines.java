@@ -39,12 +39,13 @@ public class CountLines {
 	}
 
 	private boolean isValid(String line) {
+		// Return false if just whitespace
 		Pattern pattern = Pattern.compile("\\s*");
 		Matcher matcher = pattern.matcher(line);
 		if (matcher.matches()) return false;
 		
 		// Return true if there is not a slash
-		pattern = Pattern.compile(".*/.*");
+		pattern = Pattern.compile(".*\\S.*/.*");
 		matcher = pattern.matcher(line);
 		
 		return !matcher.matches();
