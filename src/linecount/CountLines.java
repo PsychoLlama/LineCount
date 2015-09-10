@@ -1,88 +1,103 @@
 package linecount;
 
-import java.io.BufferedReader;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.IOException;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+/**
+ * Assume code is compilable. (Comments and quotes terminate properly.)
+ *
+ */
 public class CountLines {
-
-	private BufferedReader	reader	= null;
-	private FileReader		file		= null;
-
-//	private boolean insideComment = false;
+	private boolean insideBlockComment = false;
+	boolean insideQuote = false;
 
 	public static void main(String[] args) {
 		// TODO Auto-generated method stub
 
 	}
 
-	public int infile(String fileName) throws IllegalArgumentException {
-		if (fileName == null || fileName.isEmpty()) {
-			throw new IllegalArgumentException();
-		}
-		reader = openBufferedReader(fileName);
-		String line = null;
+	public int countLines(List<String> input) {
 		int count = 0;
-		line = getNextLine();
-		while (line != null) {
+		for (String line : input) {
 			if (isValid(line)) {
 				count++;
 			}
-			line = getNextLine();
 		}
-		closeStream();
-
 		return count;
 	}
 
 	private boolean isValid(String line) {
-		// Return false if just whitespace
-		Pattern pattern = Pattern.compile("\\s*");
-		Matcher matcher = pattern.matcher(line);
-		if (matcher.matches()) return false;
+		boolean valid = false;
 		
-		// Return true if there is not a slash
-		pattern = Pattern.compile(".*\\S.*/.*");
-		matcher = pattern.matcher(line);
-		
-		return !matcher.matches();
+		for (int index = 0; index < line.length(); index++) {
+			char ch = line.charAt(index);
+			switch (ch) {
+				case ' ':
+				case '\n':
+				case '\t':
+				case '\r':
+					break;
+				case '"':
+					if (!insideBlockComment) {
+						valid = true;
+						insideQuote = !insideQuote;
+					}
+					break;
+				case '/':
+					if (isLineComment(line, index) ) {
+						if (!insideBlockComment) {
+							return valid;
+						}
+					}
+
+					if (isBlockComment(line, index) ) {
+						insideBlockComment = true;
+						index++;
+					} else {
+						if (!insideBlockComment) {
+							valid = true;
+						}
+					}
+					
+					break;
+				case '*':
+					if (insideBlockComment) {
+						if (matchedCharAtIndex('/', line, index + 1)) {
+							insideBlockComment = false;
+							index++;
+						}
+					} else {
+						valid = true;
+					}
+					break;
+				default:
+					if (!insideBlockComment) {
+						valid = true;
+					}
+			}
+		}
+		return valid;
 	}
 
-	protected void closeStream() { // comment
-		try {
-			reader.close();
-			file.close();
+	private boolean isBlockComment(String line, int index) {
+		if (matchedCharAtIndex('*', line, index + 1) ) {
+			if (!insideQuote) {
+				return insideBlockComment = true;
+			}
 		}
-		catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+		return false;
 	}
 
-	private String getNextLine() {
-		String line = null;
-		try {
-			line = reader.readLine();
-		}
-		catch (IOException e) {
-			// FIXME handle IO errors
-			e.printStackTrace();
-		}
-		return line;
+	private boolean isLineComment(String line, int index) {
+		return (matchedCharAtIndex('/', line, index + 1));
 	}
 
-	private BufferedReader openBufferedReader(String fileName) throws IllegalArgumentException {
-		try {
-			file = new FileReader(fileName);
+	private boolean matchedCharAtIndex(char searchTarget, String line, int index) {
+		if (index == line.length()) {
+			return false;
 		}
-		catch (FileNotFoundException e) {
-			throw new IllegalArgumentException("File not found.");
-		}
-		reader = new BufferedReader(file);
-		return reader;
+		return (searchTarget == line.charAt(index));
 	}
 
 }
