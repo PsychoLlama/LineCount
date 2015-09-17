@@ -1,4 +1,0 @@
-// Comment number 1
-/* comment */
-/* multiline comment
-*/
